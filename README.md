@@ -4,6 +4,12 @@
 
 **一键跳读，智能总结。像青蛙跳跃一样快速获取文章精华。**
 
+<p align="center">
+  <img src="./public/p1.png" alt="LeapRead illustration" width="420">
+  <img src="./public/p2.png" alt="LeapRead illustration" width="420">
+</p>
+
+
 [![Chrome](https://img.shields.io/badge/Chrome-114%2B-green.svg)](https://www.google.com/chrome/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
