@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeapRead - AI Article Summarizer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🐸 LeapRead</h1>
+      <button id="settingsBtn" class="settings-btn" title="设置">⚙️</button>
+    </header>
+
+    <div id="initialView" class="view">
+      <button id="summarizeBtn" class="primary-btn">
+        <span class="btn-icon">✨</span>
+        开始总结
+      </button>
+      <p class="hint">点击按钮分析当前公众号文章</p>
+    </div>
+
+    <div id="loadingView" class="view hidden">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">正在分析文章...</p>
+      <p class="loading-hint">请稍候，这可能需要几秒钟</p>
+    </div>
+
+    <div id="resultView" class="view hidden">
+      <div class="article-header">
+        <h2 id="articleTitle" class="article-title"></h2>
+        <div id="articleMeta" class="article-meta"></div>
+      </div>
+
+      <div class="result-section">
+        <div class="section-header">
+          <h2>📋 文章总结</h2>
+          <button id="copyBtn" class="icon-btn" title="复制总结">📋</button>
+        </div>
+        <div id="summaryContent" class="summary-content"></div>
+      </div>
+
+      <div class="result-section">
+        <div class="section-header">
+          <h2>🔗 外部链接</h2>
+          <div class="header-actions">
+            <span id="linkCount" class="count-badge">0</span>
+            <button id="copyLinksBtn" class="icon-btn" title="复制所有链接">📋</button>
+          </div>
+        </div>
+        <div id="linksContent" class="links-content"></div>
+      </div>
+
+      <button id="newSummaryBtn" class="secondary-btn">重新总结</button>
+    </div>
+
+    <div id="errorView" class="view hidden">
+      <div class="error-icon">❌</div>
+      <h3 class="error-title">出错了</h3>
+      <p id="errorMessage" class="error-message"></p>
+      <button id="retryBtn" class="primary-btn">重试</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
