@@ -11,10 +11,7 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "https://mp.weixin.qq.com/*",
-    "https://api.openai.com/*",
-    "https://api.siliconflow.cn/*",
-    "https://*/*"
+    "https://mp.weixin.qq.com/*"
   ],
   "action": {
     "default_title": "LeapRead - Smart Article Digest",
