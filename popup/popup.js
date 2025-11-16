@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const buttons = {
     summarize: document.getElementById('summarizeBtn'),
+    extractLinks: document.getElementById('extractLinksBtn'),
     settings: document.getElementById('settingsBtn'),
     copy: document.getElementById('copyBtn'),
     copyLinks: document.getElementById('copyLinksBtn'),
@@ -39,12 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
     await startSummarize();
   });
 
+  // 仅提取链接
+  buttons.extractLinks.addEventListener('click', async () => {
+    await extractLinksOnly();
+  });
+
   // 重试
   buttons.retry.addEventListener('click', async () => {
     await startSummarize();
   });
 
-  // 重新总结
+  // 重新总结/重新提取
   buttons.newSummary.addEventListener('click', () => {
     showView('initial');
   });
@@ -58,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSummary = '';
   let currentLinks = [];
   let currentArticle = null;
+  let currentMode = 'summarize'; // 'summarize' 或 'extractLinks'
 
   // 复制总结（保持Markdown格式）
   buttons.copy.addEventListener('click', () => {
@@ -167,7 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
       currentSummary = aiResult.summary;
       currentLinks = links;
       currentArticle = article;
-      displayResults(aiResult.summary, links, article);
+      currentMode = 'summarize';
+      displayResults(aiResult.summary, links, article, true);
       showView('result');
 
     } catch (error) {
@@ -177,8 +185,69 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // 仅提取链接功能
+  async function extractLinksOnly() {
+    try {
+      showView('loading');
+
+      // 1. 检查当前标签页
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (!tab.url || !tab.url.includes('mp.weixin.qq.com/s')) {
+        throw new Error('请在公众号文章页面使用此插件');
+      }
+
+      // 2. 确保Content Script已加载，然后提取文章内容和链接
+      let extractResult;
+      try {
+        extractResult = await chrome.tabs.sendMessage(tab.id, {
+          action: 'extractArticle'
+        });
+      } catch (error) {
+        // 如果Content Script未加载，尝试注入它
+        console.log('Content Script未加载，尝试注入...');
+        try {
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content/content.js']
+          });
+          
+          // 等待一小段时间让script加载
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // 重试发送消息
+          extractResult = await chrome.tabs.sendMessage(tab.id, {
+            action: 'extractArticle'
+          });
+        } catch (injectError) {
+          console.error('注入Content Script失败:', injectError);
+          throw new Error('页面初始化失败，请刷新页面后重试');
+        }
+      }
+
+      if (!extractResult || !extractResult.success) {
+        throw new Error(extractResult?.error || '提取文章内容失败');
+      }
+
+      const { article, links } = extractResult.data;
+
+      // 3. 保存数据并显示结果（无需AI总结）
+      currentSummary = '';
+      currentLinks = links;
+      currentArticle = article;
+      currentMode = 'extractLinks';
+      displayResults('', links, article, false);  // 传入 false 表示不显示总结
+      showView('result');
+
+    } catch (error) {
+      console.error('提取链接出错:', error);
+      content.errorMessage.textContent = error.message;
+      showView('error');
+    }
+  }
+
   // 显示结果
-  function displayResults(summary, links, article) {
+  function displayResults(summary, links, article, showSummary = true) {
     // 显示文章标题和元信息
     if (article) {
       content.articleTitle.textContent = article.title || '未知标题';
@@ -194,8 +263,18 @@ document.addEventListener('DOMContentLoaded', () => {
       content.articleMeta.innerHTML = metaItems.join('');
     }
 
-    // 渲染总结（简单的Markdown转换）
-    content.summary.innerHTML = renderMarkdown(summary);
+    // 根据参数决定是否显示总结部分
+    const summarySection = document.getElementById('summarySection');
+    if (showSummary && summary) {
+      if (summarySection) {
+        summarySection.style.display = 'block';
+        content.summary.innerHTML = renderMarkdown(summary);
+      }
+    } else {
+      if (summarySection) {
+        summarySection.style.display = 'none';
+      }
+    }
 
     // 渲染链接
     if (links && links.length > 0) {
@@ -211,6 +290,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       content.linkCount.textContent = '0';
       content.links.innerHTML = '<p class="hint">未找到外部链接</p>';
+    }
+
+    // 根据当前模式更新底部按钮文案
+    if (currentMode === 'extractLinks') {
+      buttons.newSummary.textContent = '重新提取';
+    } else {
+      buttons.newSummary.textContent = '重新总结';
     }
   }
 

@@ -14,10 +14,16 @@
     </header>
 
     <div id="initialView" class="view">
-      <button id="summarizeBtn" class="primary-btn">
-        <span class="btn-icon">✨</span>
-        开始总结
-      </button>
+      <div class="button-group">
+        <button id="summarizeBtn" class="primary-btn">
+          <span class="btn-icon">✨</span>
+          AI 总结
+        </button>
+        <button id="extractLinksBtn" class="secondary-action-btn">
+          <span class="btn-icon">🔗</span>
+          仅提取链接
+        </button>
+      </div>
       <p class="hint">点击按钮分析当前公众号文章</p>
     </div>
 
@@ -33,7 +39,7 @@
         <div id="articleMeta" class="article-meta"></div>
       </div>
 
-      <div class="result-section">
+      <div id="summarySection" class="result-section">
         <div class="section-header">
           <h2>📋 文章总结</h2>
           <button id="copyBtn" class="icon-btn" title="复制总结">📋</button>
